@@ -1,7 +1,10 @@
 #pragma once
 
+#include <windows.h>
+
 #include "core/application.h"
 #include "core/logger.h"
+#include "core/fmemory.h"
 #include "game_types.h"
 
 // Externally-defined function to create game:
@@ -13,6 +16,8 @@ extern bool8_t create_game(game* out_game);
  */
 int main(void)
 {
+    initialize_memory();
+
     // Request the game instance from the application:
     game game_instance;
     if (!create_game(&game_instance))
@@ -41,6 +46,8 @@ int main(void)
         FINFO("Application did not shutdown gracefully.\n");
         return 2;
     }
+
+    shutdown_memory();
 
     return 0;
 }

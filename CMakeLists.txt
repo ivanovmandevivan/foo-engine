@@ -20,7 +20,9 @@ add_library(foo SHARED ${ENGINE_SOURCES}
         engine/src/core/application.h
         engine/src/core/application.c
         engine/src/game_types.h
-        engine/src/entry_point.h)
+        engine/src/entry_point.h
+        engine/src/core/fmemory.h
+        engine/src/core/fmemory.c)
 
 # Include directories
 target_include_directories(foo PUBLIC "engine/src")
