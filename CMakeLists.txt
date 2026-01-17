@@ -15,7 +15,8 @@ add_library(foo SHARED ${ENGINE_SOURCES}
         engine/src/core/logger.c
         engine/src/core/asserts.h
         engine/src/platform/platform.h
-        engine/src/platform/platform_win32.c)
+        engine/src/platform/platform_win32.c
+        engine/src/platform/platform_linux.c)
 
 # Include directories
 target_include_directories(foo PUBLIC "engine/src")
