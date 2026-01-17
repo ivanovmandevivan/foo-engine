@@ -13,7 +13,9 @@ file(GLOB_RECURSE ENGINE_SOURCES "engine/src/*.c")
 add_library(foo SHARED ${ENGINE_SOURCES}
         engine/src/core/logger.h
         engine/src/core/logger.c
-        engine/src/core/asserts.h)
+        engine/src/core/asserts.h
+        engine/src/platform/platform.h
+        engine/src/platform/platform_win32.c)
 
 # Include directories
 target_include_directories(foo PUBLIC "engine/src")

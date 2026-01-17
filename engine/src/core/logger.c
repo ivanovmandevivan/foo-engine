@@ -1,5 +1,6 @@
 #include "logger.h"
 #include "asserts.h"
+#include "platform/platform.h"
 
 // TODO: Temp, remove later.
 #include <stdio.h>
@@ -19,23 +20,31 @@ void shutdown_logging()
     // TODO: cleanup logging/write queued entries.
 }
 
-void log_output(log_level level, const char* message, ...)
-{
-    const char* level_strings[6] = {"[FATAL]: ", "[ERROR]: ", "[WARN]: ", "[INFO]: ", "[DEBUG]: ", "[TRACE]: "};
-    //bool8_t is_error = level < 2;
+void log_output(log_level level, const char* message, ...) {
+    const char* level_strings[6] = {"[FATAL]: ", "[ERROR]: ", "[WARN]:  ", "[INFO]:  ", "[DEBUG]: ", "[TRACE]: "};
+    bool8_t is_error = level < LOG_LEVEL_WARN;
 
     // Technically imposes a 32k character limit on a single log entry, but...
-    // Have to change this and address this later (this is an effort to avoid dynamic mem, for now...)
-    char out_message[KMESSAGE_SIZE] = {0};
+    // DON'T DO THAT!
+    const int32_t msg_length = 32000;
+    char out_message[msg_length];
+    memset(out_message, 0, sizeof(out_message));
 
     // Format original message.
     __builtin_va_list arg_ptr;
     va_start(arg_ptr, message);
-    vsnprintf(out_message, KMESSAGE_SIZE, message, arg_ptr);
+    vsnprintf(out_message, msg_length, message, arg_ptr);
     va_end(arg_ptr);
 
-    // TODO: platform-specific output.
-    printf("%s%s\n", level_strings[level], out_message);
+    char out_message2[msg_length];
+    sprintf(out_message2, "%s%s\n", level_strings[level], out_message);
+
+    // Platform-specific output.
+    if (is_error) {
+        platform_console_write_error(out_message2, level);
+    } else {
+        platform_console_write(out_message2, level);
+    }
 }
 
 void report_assertion_failure(const char* expression, const char* message, const char* file, int32_t line)
