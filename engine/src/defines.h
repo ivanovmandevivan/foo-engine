@@ -52,18 +52,18 @@ STATIC_ASSERT(sizeof(bool8_t) == 1, "Expected bool8_t to be of size 1 bytes.");
 
 // Platform detection
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__)
-#define KPLATFORM_WINDOWS 1
+#define FPLATFORM_WINDOWS 1
 #ifndef _WIN64
 #error "64-bit is required on Windows!"
 #endif
 #elif defined (__linux__) || defined(__gnu_linux__)
 // Linux OS
-#define KPLATFORM_LINUX 1
+#define FPLATFORM_LINUX 1
 #if defined(__ANDROID__)
-#define KPLATFORM_ANDROID 1
+#define FPLATFORM_ANDROID 1
 #endif
 #elif defined(__unix__)
-#define KPLATFORM_UNIX 1
+#define FPLATFORM_UNIX 1
 #elif defined(_POSIX_VERSION)
 // Posix
 #define KPLATFORM_POSIX 1
@@ -87,18 +87,18 @@ STATIC_ASSERT(sizeof(bool8_t) == 1, "Expected bool8_t to be of size 1 bytes.");
 #error "Unknown platform!"
 #endif
 
-#ifdef KEXPORT
+#ifdef FEXPORT
 // Exports
 #ifdef _MSC_VER
-#define KAPI __declspec(dllexport)
+#define FAPI __declspec(dllexport)
 #else
-#define KAPI __attribute__((visibility("default")))
+#define FAPI __attribute__((visibility("default")))
 #endif
 #else
 // Imports
 #ifdef _MSC_VER
-#define KAPI __declspec(dllimport)
+#define FAPI __declspec(dllimport)
 #else
-#define KAPI
+#define FAPI
 #endif
 #endif

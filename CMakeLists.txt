@@ -10,7 +10,10 @@ find_package(Vulkan REQUIRED)
 # -- Engine Library (Foo) ---
 file(GLOB_RECURSE ENGINE_SOURCES "engine/src/*.c")
 
-add_library(foo SHARED ${ENGINE_SOURCES})
+add_library(foo SHARED ${ENGINE_SOURCES}
+        engine/src/core/logger.h
+        engine/src/core/logger.c
+        engine/src/core/asserts.h)
 
 # Include directories
 target_include_directories(foo PUBLIC "engine/src")
