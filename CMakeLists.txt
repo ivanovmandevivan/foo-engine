@@ -16,7 +16,11 @@ add_library(foo SHARED ${ENGINE_SOURCES}
         engine/src/core/asserts.h
         engine/src/platform/platform.h
         engine/src/platform/platform_win32.c
-        engine/src/platform/platform_linux.c)
+        engine/src/platform/platform_linux.c
+        engine/src/core/application.h
+        engine/src/core/application.c
+        engine/src/game_types.h
+        engine/src/entry_point.h)
 
 # Include directories
 target_include_directories(foo PUBLIC "engine/src")
@@ -38,7 +42,9 @@ target_link_libraries(foo Vulkan::Vulkan)
 # Gather all source files in testbed/src
 file(GLOB_RECURSE TESTBED_SOURCES "testbed/src/*.c")
 
-add_executable(testbed ${TESTBED_SOURCES})
+add_executable(testbed ${TESTBED_SOURCES}
+        testbed/src/game.h
+        testbed/src/game.c)
 
 # Include directories (needs engine headers)
 target_include_directories(testbed PRIVATE "testbed/src")

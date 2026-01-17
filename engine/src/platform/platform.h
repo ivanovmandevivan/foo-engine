@@ -7,15 +7,16 @@ typedef struct platform_state
     void* internal_state;
 } platform_state;
 
-FAPI bool8_t platform_startup(platform_state* plat_state, const char* application_name, int32_t x, int32_t y,
+bool8_t platform_startup(platform_state* plat_state, const char* application_name, int32_t x, int32_t y,
     int32_t width, int32_t height);
 
-FAPI void platform_shutdown(platform_state* plat_state);
+void platform_shutdown(platform_state* plat_state);
 
-FAPI bool8_t platform_pump_messages(platform_state* plat_state);
+bool8_t platform_pump_messages(platform_state* plat_state);
 
-void* platform_allocate(uint64_t size, bool8_t aligned);
-void platform_free(void* block, bool8_t* aligned);
+// TODO: Temporarily adding export FAPI to be able to point to these, need to remove it later.
+FAPI void* platform_allocate(uint64_t size, bool8_t aligned);
+FAPI void platform_free(void* block, bool8_t* aligned);
 void* platform_zero_memory(void* block, uint64_t size);
 void* platform_copy_memory(void* dest, const void* source, uint64_t size);
 void* platform_set_memory(void* dest, int32_t value, uint64_t size);
