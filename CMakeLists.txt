@@ -28,7 +28,9 @@ add_library(foo SHARED ${ENGINE_SOURCES}
         engine/src/containers/darray.h
         engine/src/containers/darray.c
         engine/src/core/input.h
-        engine/src/core/input.c)
+        engine/src/core/input.c
+        engine/src/core/fstring.h
+        engine/src/core/fstring.c)
 
 # Include directories
 target_include_directories(foo PUBLIC "engine/src")
