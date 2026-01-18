@@ -1,5 +1,6 @@
 #include "application.h"
 #include "core/event.h"
+#include "core/input.h"
 
 #include "game_types.h"
 
@@ -32,6 +33,7 @@ bool8_t application_create(game* game_instance)
 
     // Initialize Subsystems:
     initialize_logging();
+    input_initialize();
 
     // TODO: Remove this
     FFATAL("A test message: %f", 3.14f);
@@ -99,12 +101,18 @@ bool8_t application_run()
                 app_state.is_running = FALSE;
                 break;
             }
+
+            // N.B: Input update/state copying should be always handled
+            // after any input should be recorded; e.g., before tihs line.
+            // As a safety, input is the last thing to be updated before the frame ends.
+            input_update(0);
         }
     }
 
     app_state.is_running = FALSE;
 
     event_shutdown();
+    input_shutdown();
 
     platform_shutdown(&app_state.platform);
 
