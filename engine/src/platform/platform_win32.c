@@ -3,8 +3,9 @@
 
 // Windows platform layer:
 #if FPLATFORM_WINDOWS
-#include "core/logger.h"
 #include "core/asserts.h"
+#include "core/input.h"
+#include "core/logger.h"
 
 #include <windows.h>
 #include <windowsx.h> // param input extraction
@@ -50,27 +51,31 @@ LRESULT CALLBACK win32_process_message(HWND hwnd, uint32_t msg, WPARAM w_param, 
         case WM_SYSKEYUP:
         {
             // Key Pressed/Released
-            // bool8_t = (msg == WM_KEYDOWN || msg == WM_SYSKEYDOWN);
-            // TODO: input processing
+            bool8_t pressed = (msg == WM_KEYDOWN || msg == WM_SYSKEYDOWN);
+            keys key = (uint16_t)w_param;
+
+            // Pass to the input subsystem to process:
+            input_process_key(key, pressed);
         }
         break;
         case WM_MOUSEMOVE:
         {
-            // // Mouse move
-            // int32_t x_position = GET_X_LPARAM(l_param);
-            // int32_t y_position = GET_Y_LPARAM(l_param);
-            // // TODO: input processing.
+            // Mouse move
+            int32_t x_position = GET_X_LPARAM(l_param);
+            int32_t y_position = GET_Y_LPARAM(l_param);
+
+            input_process_mouse_move(x_position, y_position);
         }
         break;
         case WM_MOUSEWHEEL:
         {
-            // int32_t zDelta = GET_WHEEL_DELTA_WPARAM(w_param);
-            // if (zDelta != 0)
-            // {
-            //     // Flatten the input to an OS-independent (-1, 1);
-            //     zDelta = (zDelta < 0) ? -1 : 1;
-            //     // TODO: input processing
-            // }
+            int32_t zDelta = GET_WHEEL_DELTA_WPARAM(w_param);
+            if (zDelta != 0)
+            {
+                // Flatten the input to an OS-independent (-1, 1);
+                zDelta = (zDelta < 0) ? -1 : 1;
+                input_process_mouse_wheel(zDelta); // TODO: Narrowing conversion from i32 > i8, fix this
+            }
         }
         break;
         case WM_LBUTTONDOWN:
@@ -80,8 +85,29 @@ LRESULT CALLBACK win32_process_message(HWND hwnd, uint32_t msg, WPARAM w_param, 
         case WM_MBUTTONUP:
         case WM_RBUTTONUP:
         {
-            // bool8_t pressed = msg == WM_LBUTTONDOWN || msg == WM_RBUTTONDOWN || msg == WM_MBUTTONDOWN;
-            // TODO: input processing
+            bool8_t pressed = msg == WM_LBUTTONDOWN || msg == WM_RBUTTONDOWN || msg == WM_MBUTTONDOWN;
+            MouseButtons mouse_button = BUTTON_MAX_BUTTONS;
+            switch (msg)
+            {
+                case WM_LBUTTONDOWN:
+                case WM_LBUTTONUP:
+                    mouse_button = BUTTON_LEFT;
+                    break;
+                case WM_MBUTTONDOWN:
+                case WM_MBUTTONUP:
+                    mouse_button = BUTTON_MIDDLE;
+                    break;
+                case WM_RBUTTONDOWN:
+                case WM_RBUTTONUP:
+                    mouse_button = BUTTON_RIGHT;
+                    break;
+            }
+
+            // Pass over to the input subsystem:
+            if (mouse_button != BUTTON_MAX_BUTTONS)
+            {
+                input_process_mouse_button(mouse_button, pressed);
+            }
         }
         break;
     }

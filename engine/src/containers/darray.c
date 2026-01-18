@@ -89,21 +89,20 @@ void _darray_pop_at(void** array, uint64_t index, void* dest)
 {
     void* array_val = *array;
     uint64_t length = darray_length(array_val);
-    if (length <= 0)
-    {
-        FERROR("Unable to 'pop at' this array with length zero! Length: %i, index: %index", length, index);
-        return;
-    }
+    uint64_t stride = darray_stride(array_val);
 
     if (index >= length)
     {
-        FERROR("Index outside the bounds of this array! Length: %i, index: %index", length, index);
+        FERROR("Index outside the bounds of this array! Length: %llu, index: %llu", length, index);
         return;
     }
 
-    uint64_t stride = darray_stride(array_val);
     uint64_t addr = (uint64_t)(array_val);
+
+    if (dest)
+    {
     fcopy_memory(dest, (void*)(addr + (index * stride)), stride);
+    }
 
     // If not on the last element, snip out the entry and copy the rest inwards:
     if (index != length - 1)
@@ -111,7 +110,7 @@ void _darray_pop_at(void** array, uint64_t index, void* dest)
         fcopy_memory(
           (void*)(addr + (index * stride)),
           (void*)(addr + ((index + 1) * stride)),
-          stride * (length - index));
+          stride * (length - index - 1));
     }
 
     _darray_field_set(array_val, DARRAY_LENGTH, length - 1);
@@ -120,15 +119,11 @@ void _darray_insert_at(void** array, uint64_t index, void* value_ptr)
 {
     void* array_val = *array;
     uint64_t length = darray_length(array_val);
-    if (length <= 0)
-    {
-        FERROR("Unable to 'insert at' this array with length zero! Length: %i, index: %index", length, index);
-        return;
-    }
+    uint64_t stride = darray_stride(array_val);
 
     if (index >= length)
     {
-        FERROR("Index outside the bounds of this array! Length: %i, index: %index", length, index);
+        FERROR("Index outside the bounds of this array! Length: %llu, index: %llu", length, index);
         return;
     }
 
@@ -138,11 +133,10 @@ void _darray_insert_at(void** array, uint64_t index, void* value_ptr)
         array_val = *array;
     }
 
-    uint64_t stride = darray_stride(array_val);
     uint64_t addr = (uint64_t)(array_val);
 
     // If not on the last element, copy the rest outwards:
-    if (index != length - 1)
+    if (index != length)
     {
         fcopy_memory(
           (void*)(addr + ((index + 1) * stride)),

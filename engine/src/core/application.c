@@ -21,6 +21,10 @@ typedef struct application_state
 static uint8_t initialized = FALSE;
 static application_state app_state;
 
+// Event Handlers:
+bool8_t application_on_event(uint16_t code, void* sender, void* listener_list, event_context context);
+bool8_t application_on_key(uint16_t code, void* sender, void* listener_list, event_context context);
+
 bool8_t application_create(game* game_instance)
 {
     if (initialized)
@@ -51,6 +55,10 @@ bool8_t application_create(game* game_instance)
         FERROR("Event system failed initialization. Application can't continue");
         return FALSE;
     }
+
+    event_register(EVENT_CODE_APPLICATION_QUIT, 0, application_on_event);
+    event_register(EVENT_CODE_KEY_PRESSED, 0, application_on_key);
+    event_register(EVENT_CODE_KEY_RELEASED, 0, application_on_key);
 
     if (!platform_startup(
         &app_state.platform,
@@ -111,10 +119,70 @@ bool8_t application_run()
 
     app_state.is_running = FALSE;
 
+    event_unregister(EVENT_CODE_APPLICATION_QUIT, 0, application_on_event);
+    event_unregister(EVENT_CODE_KEY_PRESSED, 0, application_on_key);
+    event_unregister(EVENT_CODE_KEY_RELEASED, 0, application_on_key);
+
+
     event_shutdown();
     input_shutdown();
 
     platform_shutdown(&app_state.platform);
 
     return TRUE;
+}
+
+bool8_t application_on_event(uint16_t code, void* sender, void* listener_list, event_context context)
+{
+    switch (code)
+    {
+        case EVENT_CODE_APPLICATION_QUIT:
+            FINFO("EVENT_CODE_APPLICATION_QUIT received, shutting down.\n");
+            app_state.is_running = FALSE;
+            return TRUE;
+    }
+
+    return FALSE;
+}
+
+bool8_t application_on_key(const uint16_t code, void* sender, void* listener_list, event_context context)
+{
+    if (code == EVENT_CODE_KEY_PRESSED)
+    {
+        uint16_t key_code = context.data.u16[0];
+        if (key_code == KEY_ESCAPE)
+        {
+            // N.B: Technically firing an event to itself, but there may be other listeners:
+            event_context data = {};
+            event_fire(EVENT_CODE_APPLICATION_QUIT, 0, data);
+
+            // Block anything else from processing this:
+            return TRUE;
+        }
+
+        if (key_code == KEY_A)
+        {
+            // Example on checking for a key:
+            FDEBUG("Explicit - A key pressed!");
+        }
+        else
+        {
+            FDEBUG("'%c' key pressed in window.", key_code);
+        }
+    }
+    else if (code == EVENT_CODE_KEY_RELEASED)
+    {
+        uint16_t key_code = context.data.u16[0];
+        if (key_code == KEY_B)
+        {
+            // Example on checking for a key:
+            FDEBUG("Explicit - B key released!");
+        }
+        else
+        {
+            FDEBUG("'%c' key released in window.", key_code);
+        }
+    }
+
+    return FALSE;
 }

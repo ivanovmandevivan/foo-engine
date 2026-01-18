@@ -10,8 +10,8 @@ typedef struct keyboard_state
 
 typedef struct mouse_State
 {
-    int16_t x;
-    int16_t y;
+    int32_t x;
+    int32_t y;
     uint8_t buttons[BUTTON_MAX_BUTTONS];
 } mouse_state;
 
@@ -55,10 +55,10 @@ void input_update(float64_t delta_time)
 void input_process_key(keys keyCode, bool8_t pressed)
 {
     // Only handle if the state actually has changed:
-    if (state.keyboard_previous.keys[keyCode] != pressed)
+    if (state.keyboard_current.keys[keyCode] != pressed)
     {
         // Update internal state:
-        state.keyboard_previous.keys[keyCode] = pressed;
+        state.keyboard_current.keys[keyCode] = pressed;
 
         // Fire off an event for immediate processing:
         event_context context;
@@ -81,7 +81,7 @@ void input_process_mouse_button(MouseButtons button, bool8_t pressed)
     }
 }
 
-void input_process_mouse_move(int16_t x, int16_t y)
+void input_process_mouse_move(int32_t x, int32_t y)
 {
     // Only process if actually different:
     if (state.mouse_current.x != x || state.mouse_current.y != y)
@@ -95,8 +95,8 @@ void input_process_mouse_move(int16_t x, int16_t y)
 
         // Fire the event:
         event_context context;
-        context.data.u16[0] = x;
-        context.data.u16[1] = y;
+        context.data.u32[0] = x;
+        context.data.u32[1] = y;
         event_fire(EVENT_CODE_MOUSE_MOVED, 0, context);
     }
 }

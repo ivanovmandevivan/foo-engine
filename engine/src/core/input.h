@@ -167,5 +167,5 @@ FAPI void input_get_mouse_position(int32_t* x, int32_t* y);
 FAPI void input_get_previous_mouse_position(int32_t* x, int32_t* y);
 
 void input_process_mouse_button(MouseButtons button, bool8_t pressed);
-void input_process_mouse_move(int16_t x, int16_t y);
+void input_process_mouse_move(int32_t x, int32_t y);
 void input_process_mouse_wheel(int8_t z_delta);
