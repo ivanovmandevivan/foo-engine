@@ -1,4 +1,7 @@
 #include "application.h"
+
+#include "fmemory.h"
+#include "core/clock.h"
 #include "core/event.h"
 #include "core/input.h"
 
@@ -7,8 +10,11 @@
 #include "platform/platform.h"
 #include "logger.h"
 
+#include "renderer/renderer_frontend.h"
+
 typedef struct application_state
 {
+    clock clock;
     game* game_instance;
     platform_state platform;
     float64_t last_time;
@@ -71,6 +77,13 @@ bool8_t application_create(game* game_instance)
        return FALSE;
     }
 
+    // Renderer startup:
+    if (!renderer_initialize(game_instance->app_config.name, &app_state.platform))
+    {
+        FFATAL("Failed to initialize renderer. Aborting application.");
+        return FALSE;
+    }
+
     // Initialize the game:
     if (!app_state.game_instance->initialize(app_state.game_instance))
     {
@@ -86,6 +99,16 @@ bool8_t application_create(game* game_instance)
 
 bool8_t application_run()
 {
+    clock_start(&app_state.clock);
+    clock_update(&app_state.clock);
+    app_state.last_time = app_state.clock.elapsed;
+
+    float64_t running_time = 0;
+    uint8_t frame_count = 0;
+    float64_t target_frame_seconds = 1.0f / 60.0f;
+
+    FINFO(get_memory_usage_str());
+
     while (app_state.is_running)
     {
         if (!platform_pump_messages(&app_state.platform))
@@ -95,7 +118,13 @@ bool8_t application_run()
 
         if (!app_state.is_suspended)
         {
-            if (!app_state.game_instance->update(app_state.game_instance, (float32_t) 0))
+            // Update clock and get delta time:
+            clock_update(&app_state.clock);
+            float64_t current_time = app_state.clock.elapsed;
+            float64_t delta = (current_time - app_state.last_time);
+            float64_t frame_start_time = platform_get_absolute_time();
+
+            if (!app_state.game_instance->update(app_state.game_instance, (float32_t) delta))
             {
                 FFATAL("Game update failed, shutting down.");
                 app_state.is_running = FALSE;
@@ -103,17 +132,45 @@ bool8_t application_run()
             }
 
             // Call teh game's render routine:
-            if (!app_state.game_instance->render(app_state.game_instance, (float32_t) 0))
+            if (!app_state.game_instance->render(app_state.game_instance, (float32_t) delta))
             {
                 FFATAL("Game render failed, shutting down.");
                 app_state.is_running = FALSE;
                 break;
             }
 
+            // TODO: refactor packet creation
+            render_packet packet;
+            packet.delta_time = delta;
+            renderer_draw_frame(&packet);
+
+            // Figure out how long the frame took:
+            float64_t frame_end_time = platform_get_absolute_time();
+            float64_t frame_elapsed_time = frame_end_time - frame_start_time;
+            running_time += frame_elapsed_time;
+            float64_t remaining_seconds = target_frame_seconds - frame_elapsed_time;
+
+            if (remaining_seconds > 0)
+            {
+                float64_t remaining_ms = (remaining_seconds * 1000);
+
+                // If there is time left, give it back to the OS.
+                bool8_t limit_frames = FALSE;
+                if (remaining_ms > 0 && limit_frames)
+                {
+                    platform_sleep(remaining_ms - 1);
+                }
+
+                frame_count++;
+            }
+
             // N.B: Input update/state copying should be always handled
             // after any input should be recorded; e.g., before tihs line.
             // As a safety, input is the last thing to be updated before the frame ends.
-            input_update(0);
+            input_update(delta);
+
+            // Update last time:
+            app_state.last_time = current_time;
         }
     }
 
@@ -123,9 +180,10 @@ bool8_t application_run()
     event_unregister(EVENT_CODE_KEY_PRESSED, 0, application_on_key);
     event_unregister(EVENT_CODE_KEY_RELEASED, 0, application_on_key);
 
-
     event_shutdown();
     input_shutdown();
+
+    renderer_shutdown();
 
     platform_shutdown(&app_state.platform);
 

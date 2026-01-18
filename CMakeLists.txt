@@ -30,7 +30,15 @@ add_library(foo SHARED ${ENGINE_SOURCES}
         engine/src/core/input.h
         engine/src/core/input.c
         engine/src/core/fstring.h
-        engine/src/core/fstring.c)
+        engine/src/core/fstring.c
+        engine/src/core/clock.h
+        engine/src/core/clock.c
+        engine/src/renderer/renderer_frontend.h
+        engine/src/renderer/renderer_backend.h
+        engine/src/renderer/renderer_backend.c
+        engine/src/renderer/renderer_frontend.c
+        engine/src/renderer/vulkan/vulkan_backend.h
+        engine/src/renderer/vulkan/vulkan_backend.c)
 
 # Include directories
 target_include_directories(foo PUBLIC "engine/src")
