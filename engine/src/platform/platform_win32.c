@@ -13,10 +13,19 @@
 
 #include "containers/darray.h"
 
+// TODO: Not ideal, exposing vulkan code to the platform win32 layer. Needs to be moved somewhere else.
+// For surface creation:
+#include <vulkan/vulkan.h>
+#include <vulkan/vulkan_win32.h>
+#include "renderer/vulkan/vulkan_types.inl"
+
 typedef struct internal_state
 {
     HINSTANCE h_instance;
     HWND hwnd;
+
+    // TODO: Not ideal, exposing vulkan code to the platform win32 layer. Needs to be moved somewhere else.
+    VkSurfaceKHR surface;
 } internal_state;
 
 // Clock (to track application init)
@@ -299,6 +308,34 @@ void platform_sleep(uint64_t ms)
 void platform_get_required_extension_names(const char*** names_darray)
 {
     darray_push(*names_darray, &"VK_KHR_win32_surface");
+}
+
+// TODO: Not ideal, exposing vulkan code to the platform win32 layer. Needs to be moved somewhere else.
+bool8_t platform_create_vulkan_surface(struct platform_state* plat_state, struct vulkan_context* context)
+{
+    if (0 == plat_state)
+    {
+        FFATAL("Platform state is null, unable to create Vulkan Surface!");
+        return FALSE;
+    }
+
+    if (0 == context)
+    {
+        FFATAL("Vulkan context is null, unable to create Vulkan Surface!");
+        return FALSE;
+    }
+
+    internal_state* state = (internal_state*)plat_state->internal_state;
+
+    VkWin32SurfaceCreateInfoKHR create_info = {VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR};
+    create_info.hinstance = state->h_instance;
+    create_info.hwnd = state->hwnd;
+
+    VK_CHECK(vkCreateWin32SurfaceKHR(context->instance, &create_info, context->allocator, &state->surface));
+
+    FDEBUG("Vulkan Win32 Surface created successfully.");
+    context->surface = state->surface;
+    return TRUE;
 }
 
 #endif

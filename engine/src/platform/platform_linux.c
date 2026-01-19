@@ -1,6 +1,7 @@
 #include <pthread_time.h>
 #include <stdlib.h>
 #include <string.h>
+#include <vulkan/vulkan_core.h>
 
 #include "platform.h"
 #include "defines.h"
@@ -31,6 +32,12 @@
 #include <stdio.h>
 #include <string.h>
 
+// TODO: Not ideal, exposing vulkan code to the platform linux layer. Needs to be moved somewhere else.
+// For surface creation:
+#define VK_USE_PLATFORM_XCB_KHR
+#include <vulkan/vulkan.h>
+#include "renderer/vulkan/vulkan_types.inl"
+
 typedef struct internal_state
 {
     Display* display;
@@ -39,6 +46,7 @@ typedef struct internal_state
     xcb_screen_t* screen;
     xcb_atom_t wm_protocols;
     xcb_atom_t wm_delete_win;
+    VkSurfaceKHR surface;
 } internal_state;
 
 // Key translation:
@@ -318,6 +326,38 @@ void platform_sleep(uint64_t ms)
 void platform_get_required_extension_names(const char*** names_darray)
 {
     darray_push(*names_darray, &"VK_KHR_xcb_surface");
+}
+
+// TODO: Not ideal, exposing vulkan code to the platform linux layer. Needs to be moved somewhere else.
+bool8_t platform_create_vulkan_surface(struct platform_state* plat_state, struct vulkan_context* context)
+{
+    if (0 == plat_state)
+    {
+        FFATAL("Platform state is null, unable to create Vulkan Surface!");
+        return FALSE;
+    }
+
+    if (0 == context)
+    {
+        FFATAL("Vulkan context is null, unable to create Vulkan Surface!");
+        return FALSE;
+    }
+
+    internal_state* state = (internal_state*)plat_state->internal_state;
+
+    VkXcbSurfaceCreateInfoKHR create_info = {VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR};
+    create_info.connection = state->connection;
+    create_info.window = state->window;
+
+    VK_CHECK(vkCreateXcbSurfaceKHR(
+        context->instance,
+        &create_info,
+        context->allocator,
+        &state->surface));
+
+    FDEBUG("Vulkan Linux Surface created successfully.");
+    context->surface = state->surface;
+    return TRUE;
 }
 
 // Key translation:

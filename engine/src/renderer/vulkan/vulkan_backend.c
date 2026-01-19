@@ -5,6 +5,7 @@
 #include "core/fstring.h"
 #include "containers/darray.h"
 #include "vulkan_platform.h"
+#include "vulkan_device.h"
 
 static vulkan_context context;
 
@@ -118,6 +119,22 @@ bool8_t vulkan_renderer_backend_initialize(renderer_backend* backend, const char
     VK_CHECK(func(context.instance, &debug_create_info, context.allocator, &context.debug_messenger));
     FDEBUG("Vulkan Debugger Created Successfully.");
 #endif
+
+    // Surface
+    FDEBUG("Creating Vulkan Surface...");
+    if (!platform_create_vulkan_surface(plat_state, &context))
+    {
+        FERROR("Failed to create platform surface!");
+        return FALSE;
+    }
+    FDEBUG("Vulkan Surface Successfully Created.");
+
+    // Device Creation:
+    if (!vulkan_device_create(&context))
+    {
+        FERROR("Failed to create device!");
+        return FALSE;
+    }
 
     FINFO("Vulkan Renderer initialized successfully.");
     return TRUE;
