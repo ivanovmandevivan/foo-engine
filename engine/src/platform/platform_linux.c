@@ -12,6 +12,7 @@
 #include "core/event.h"
 #include "core/input.h"
 #include "core/logger.h"
+#include "containers/darray.h"
 
 #include <xcb/xcb.h>
 #include <X11/keysym.h>
@@ -312,6 +313,11 @@ void platform_sleep(uint64_t ms)
     }
     usleep((ms % 1000) * 1000);
 #endif
+}
+
+void platform_get_required_extension_names(const char*** names_darray)
+{
+    darray_push(*names_darray, &"VK_KHR_xcb_surface");
 }
 
 // Key translation:

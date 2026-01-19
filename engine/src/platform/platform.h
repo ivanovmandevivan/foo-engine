@@ -14,7 +14,6 @@ void platform_shutdown(platform_state* plat_state);
 
 bool8_t platform_pump_messages(platform_state* plat_state);
 
-// TODO: Temporarily adding export FAPI to be able to point to these, need to remove it later.
 void* platform_allocate(uint64_t size, bool8_t aligned);
 void platform_free(void* block, bool8_t* aligned);
 void* platform_zero_memory(void* block, uint64_t size);

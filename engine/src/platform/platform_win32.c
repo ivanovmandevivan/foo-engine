@@ -11,6 +11,8 @@
 #include <windowsx.h> // param input extraction
 #include <stdlib.h>
 
+#include "containers/darray.h"
+
 typedef struct internal_state
 {
     HINSTANCE h_instance;
@@ -292,6 +294,11 @@ float64_t platform_get_absolute_time()
 void platform_sleep(uint64_t ms)
 {
     Sleep(ms);
+}
+
+void platform_get_required_extension_names(const char*** names_darray)
+{
+    darray_push(*names_darray, &"VK_KHR_win32_surface");
 }
 
 #endif

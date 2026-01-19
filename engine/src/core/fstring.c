@@ -16,3 +16,7 @@ char* string_duplicate(const char* str)
     return copy;
 }
 
+bool8_t strings_equal(const char* str0, const char* str1)
+{
+    return strcmp(str0, str1) == 0;
+}
