@@ -33,6 +33,10 @@ typedef struct vulkan_device
     uint32_t graphics_queue_family_index;
     uint32_t present_queue_family_index;
     uint32_t transfer_queue_family_index;
+
+    VkQueue graphics_queue;
+    VkQueue present_queue;
+    VkQueue transfer_queue;
 } vulkan_device;
 
 typedef struct vulkan_context
