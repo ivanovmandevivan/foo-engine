@@ -142,6 +142,17 @@ bool8_t vulkan_renderer_backend_initialize(renderer_backend* backend, const char
 
 void vulkan_renderer_backend_shutdown(renderer_backend* backend)
 {
+    // Destroy in the opposite order of creation:
+    FINFO("Destroying Vulkan Device...");
+    vulkan_device_destroy(&context);
+
+    FINFO("Destroying Vulkan Surface...");
+    if (context.surface)
+    {
+        vkDestroySurfaceKHR(context.instance, context.surface, context.allocator);
+        context.surface = 0;
+    }
+
 #ifdef _DEBUG
     FDEBUG("Destroying Vulkan Debugger...");
     if (context.debug_messenger)

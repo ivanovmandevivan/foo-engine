@@ -357,6 +357,8 @@ bool8_t vulkan_device_create(vulkan_context* context)
         queue_create_infos[i].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
         queue_create_infos[i].queueFamilyIndex = indices[i];
         queue_create_infos[i].queueCount = 1;
+
+        // Might not be available for all possible GPUs, however it is available for my current GPU, 1070.
         if (indices[i] == context->device.graphics_queue_family_index)
         {
             queue_create_infos[i].queueCount = 2;
