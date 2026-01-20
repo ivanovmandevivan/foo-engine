@@ -102,3 +102,6 @@ STATIC_ASSERT(sizeof(bool8_t) == 1, "Expected bool8_t to be of size 1 bytes.");
 #define FAPI
 #endif
 #endif
+
+// TODO: Probably worth moving them to a proper math library, whenever that happens.
+#define FCLAMP(value, min, max) (value <= min) ? min : (value >= max) ? max : value;

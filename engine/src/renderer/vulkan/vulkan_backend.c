@@ -6,6 +6,7 @@
 #include "containers/darray.h"
 #include "vulkan_platform.h"
 #include "vulkan_device.h"
+#include "vulkan_swapchain.h"
 
 static vulkan_context context;
 
@@ -15,9 +16,14 @@ VKAPI_ATTR VkBool32 VKAPI_CALL vk_debug_callback(
     const VkDebugUtilsMessengerCallbackDataEXT* callback_data,
     void* user_data);
 
+int32_t find_memory_index(uint32_t type_filter, uint32_t property_flags);
+
 bool8_t vulkan_renderer_backend_initialize(renderer_backend* backend, const char* application_name,
     struct platform_state* plat_state)
 {
+    // Function pointers:
+    context.find_memory_index = find_memory_index;
+
     // TODO: custom allocator
     context.allocator = 0;
 
@@ -136,6 +142,9 @@ bool8_t vulkan_renderer_backend_initialize(renderer_backend* backend, const char
         return FALSE;
     }
 
+    // Swapchain Creation:
+    vulkan_swapchain_create(&context, context.framebuffer_width, context.framebuffer_height, &context.swapchain);
+
     FINFO("Vulkan Renderer initialized successfully.");
     return TRUE;
 }
@@ -143,6 +152,9 @@ bool8_t vulkan_renderer_backend_initialize(renderer_backend* backend, const char
 void vulkan_renderer_backend_shutdown(renderer_backend* backend)
 {
     // Destroy in the opposite order of creation:
+    FINFO("Destroying Swapchain...");
+    vulkan_swapchain_destroy(&context, &context.swapchain);
+
     FINFO("Destroying Vulkan Device...");
     vulkan_device_destroy(&context);
 
@@ -203,4 +215,22 @@ VKAPI_ATTR VkBool32 VKAPI_CALL vk_debug_callback(
             break;
     }
     return VK_FALSE;
+}
+
+int32_t find_memory_index(uint32_t type_filter, uint32_t property_flags)
+{
+    VkPhysicalDeviceMemoryProperties mem_properties;
+    vkGetPhysicalDeviceMemoryProperties(context.device.physical_device, &mem_properties);
+
+    for (uint32_t i = 0; i < mem_properties.memoryTypeCount; ++i)
+    {
+        // Check each meomry type to see if its bits is set to 1.
+        if (type_filter & (1 << i) && (mem_properties.memoryTypes[i].propertyFlags & property_flags) == property_flags)
+        {
+            return i;
+        }
+    }
+
+    FWARN("Unable to find suitable memory type!");
+    return -1;
 }
