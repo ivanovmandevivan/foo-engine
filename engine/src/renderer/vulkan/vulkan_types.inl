@@ -30,6 +30,8 @@ typedef struct vulkan_device
     VkPhysicalDeviceFeatures features;
     VkPhysicalDeviceMemoryProperties memory;
 
+    VkCommandPool graphics_command_pool;
+
     uint32_t graphics_queue_family_index;
     uint32_t present_queue_family_index;
     uint32_t transfer_queue_family_index;
@@ -111,6 +113,9 @@ typedef struct vulkan_context
     VkInstance instance;
     VkAllocationCallbacks* allocator;
     VkSurfaceKHR surface;
+
+    // Darray:
+    vulkan_command_buffer* graphics_command_buffer;
 
 #ifdef _DEBUG
     VkDebugUtilsMessengerEXT debug_messenger;

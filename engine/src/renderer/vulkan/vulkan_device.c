@@ -403,6 +403,15 @@ bool8_t vulkan_device_create(vulkan_context* context)
 
     FINFO("Queues Handles successfully obtained from logical device.");
 
+    // Create command pool for graphics queue:
+    VkCommandPoolCreateInfo command_pool_create_info = {VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO};
+    command_pool_create_info.queueFamilyIndex = context->device.graphics_queue_family_index;
+    command_pool_create_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+
+    VK_CHECK(vkCreateCommandPool(context->device.logical_device, &command_pool_create_info, context->allocator,
+        &context->device.graphics_command_pool));
+    FINFO("Graphics Command Pool was successfully created.");
+
     return TRUE;
 }
 
@@ -413,6 +422,9 @@ void vulkan_device_destroy(vulkan_context* context)
     context->device.graphics_queue = 0;
     context->device.present_queue = 0;
     context->device.transfer_queue = 0;
+
+    FINFO("Destroying command pools...");
+    vkDestroyCommandPool(context->device.logical_device, context->device.graphics_command_pool, context->allocator);
 
     // Destroy logical device:
     FINFO("Destroying logical device...");
