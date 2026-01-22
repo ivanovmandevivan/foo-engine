@@ -17,6 +17,8 @@
 // For surface creation:
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_win32.h>
+
+#include "core/event.h"
 #include "renderer/vulkan/vulkan_types.inl"
 
 typedef struct internal_state
@@ -40,8 +42,9 @@ LRESULT CALLBACK win32_process_message(HWND hwnd, uint32_t msg, WPARAM w_param, 
             // Notify the OS that erasing will be handled by the application to prevent flicker
             return 1;
         case WM_CLOSE:
-            // TODO: Fire an event for the application to quit.
-            return 0;
+            event_context data = {};
+            event_fire(EVENT_CODE_APPLICATION_QUIT, 0, data);
+            return TRUE;
         case WM_DESTROY:
             PostQuitMessage(0);
             return 0;
