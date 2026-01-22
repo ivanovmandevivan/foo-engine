@@ -45,7 +45,9 @@ add_library(foo SHARED ${ENGINE_SOURCES}
         engine/src/renderer/vulkan/vulkan_swapchain.h
         engine/src/renderer/vulkan/vulkan_swapchain.c
         engine/src/renderer/vulkan/vulkan_image.h
-        engine/src/renderer/vulkan/vulkan_image.c)
+        engine/src/renderer/vulkan/vulkan_image.c
+        engine/src/renderer/vulkan/vulkan_renderpass.h
+        engine/src/renderer/vulkan/vulkan_renderpass.c)
 
 # Include directories
 target_include_directories(foo PUBLIC "engine/src")
